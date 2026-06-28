@@ -44,7 +44,7 @@ var (
 	SupportChannel      = getEnv("SUPPORT_CHANNEL", "https://t.me/ArcUpdates")
 	StartImg            = getEnv("START_IMG", "https://graph.org/file/53da2da07394e68711e96-76893b7d22247cde3b.jpg")
 	Port                = getEnv("PORT", "6060")
-	AutoLeave           = getEnvBool("AUTO_LEAVE", True)
+	AutoLeave           = getEnvBool("AUTO_LEAVE", true)
 	EnableVideoPlayback = getEnvBool("ENABLE_VPLAY", true)
 
 	DEVS        []int64
