@@ -56,6 +56,7 @@ func main() {
 	)
 
 	slog.SetDefault(logger)
+	slog.Info("Starting TgMusicBot", "version", config.Version)
 	tdDir := "database"
 	_ = os.Remove(tdDir)
 	libPath := "./libtdjson.so.1.8.65"
@@ -97,7 +98,7 @@ func main() {
 	}
 
 	handlers.LoadModules(client)
-	_, _ = client.SendTextMessage(config.LoggerId, "The bot has started!", nil)
+	_, _ = client.SendTextMessage(config.LoggerId, fmt.Sprintf("The bot has started! (v%s)", config.Version), nil)
 	manager.Idle()
 	client.Logger.Info("The bot is shutting down...")
 	vc.Calls.StopAllClients()
