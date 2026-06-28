@@ -224,7 +224,23 @@ func downloadFile(urlStr, fileName string, overwrite bool) (string, error) {
 
 	tempPath := fileName + ".part"
 	if err := writeToFile(tempPath, resp.Body); err != nil {
+		_ = os.Remove(tempPath)
 		return "", err
+	}
+
+	if resp.ContentLength > 0 {
+		info, err := os.Stat(tempPath)
+		if err != nil {
+			_ = os.Remove(tempPath)
+			return "", fmt.Errorf("failed to stat the downloaded file: %w", err)
+		}
+		if info.Size() < resp.ContentLength {
+			_ = os.Remove(tempPath)
+			return "", fmt.Errorf(
+				"downloaded file is smaller than expected (got %d of %d bytes)",
+				info.Size(), resp.ContentLength,
+			)
+		}
 	}
 
 	if err := os.Rename(tempPath, fileName); err != nil {

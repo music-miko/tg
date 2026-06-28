@@ -11,6 +11,7 @@ package dl
 import (
 	"ashokshau/tgmusic/src/utils"
 	"fmt"
+	"os"
 
 	td "github.com/AshokShau/gotdbot"
 )
@@ -66,7 +67,7 @@ func downloadTelegramFile(cached *utils.CachedTrack, bot *td.Client) (string, er
 		return "", err
 	}
 
-	return download.Local.Path, nil
+	return verifyDownloadedFile(download)
 }
 
 func downloadFromTelegramMessage(bot *td.Client, msgURL string) (string, error) {
@@ -80,8 +81,35 @@ func downloadFromTelegramMessage(bot *td.Client, msgURL string) (string, error) 
 		return "", err
 	}
 
-	if file == nil || file.Local == nil {
-		return "", fmt.Errorf("failed to download file from Telegram message")
+	return verifyDownloadedFile(file)
+}
+
+// verifyDownloadedFile checks that a Telegram file download actually finished.
+// A synchronous DownloadFile request can still return successfully with a
+// partial file (e.g. on a dropped connection, FLOOD_WAIT, or an expired file
+// reference) - the request succeeds but file.Local.IsDownloadingCompleted is
+// false and only a prefix of the bytes are on disk. Trusting Local.Path alone
+// in that case hands a truncated file to ffmpeg, which plays it part-way and
+// then reports end-of-stream as if the track had finished normally.
+func verifyDownloadedFile(file *td.File) (string, error) {
+	if file == nil || file.Local == nil || file.Local.Path == "" {
+		return "", fmt.Errorf("failed to download file from Telegram: no local file was returned")
+	}
+
+	if !file.Local.IsDownloadingCompleted {
+		return "", fmt.Errorf(
+			"telegram download did not finish (got %d of %d bytes): %s",
+			file.Local.DownloadedSize, file.Size, file.Local.Path,
+		)
+	}
+
+	if info, err := os.Stat(file.Local.Path); err != nil {
+		return "", fmt.Errorf("downloaded file is missing on disk: %w", err)
+	} else if file.Size > 0 && info.Size() < file.Size {
+		return "", fmt.Errorf(
+			"downloaded file is smaller than expected (got %d of %d bytes): %s",
+			info.Size(), file.Size, file.Local.Path,
+		)
 	}
 
 	return file.Local.Path, nil

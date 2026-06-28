@@ -13,6 +13,7 @@
   <a href="https://github.com/AshokShau/TgMusicBot/stargazers">
     <img src="https://img.shields.io/github/stars/AshokShau/TgMusicBot?style=for-the-badge&color=ffd700&logo=github" alt="Stars">
   </a>
+  <img src="https://img.shields.io/badge/Version-1.0.0-orange?style=for-the-badge" alt="Version">
 </p>
 
 <p align="center">
@@ -136,8 +137,15 @@ The bot is configured via environment variables. See `sample.env` for all option
 | `OWNER_ID`            | Telegram User ID of the owner             |    ✅     |
 | `LOGGER_ID`           | Group chat ID for logs                    |    ❌     |
 | `SONG_DURATION_LIMIT` | Max song duration in seconds              |    ❌     |
-| `API_KEY`             | Your API key                              |    ❌     |
+| `API_URL`             | API URL for Spotify, Apple Music, etc.    |    ❌     |
+| `API_KEY`             | API key for Spotify, Apple Music, etc.    |    ❌     |
+| `ARC_API_URL`         | ArcMusic API URL, used for YouTube        |    ❌     |
+| `ARC_API_KEY`         | ArcMusic API key, used for YouTube        |    ❌     |
+| `DB_URI`              | Mongo URI for ArcMusic's direct DB cache  |    ❌     |
+| `MEDIA_CHANNEL_ID`    | Channel ID for ArcMusic's direct DB cache |    ❌     |
 | `COOKIES_URL`         | YouTube cookies URL via https://batbin.me |    ❌     |
+| `SUPPORT_GROUP`       | Support group link                        |    ❌     |
+| `SUPPORT_CHANNEL`     | Updates channel link                      |    ❌     |
 
 </details>
 
@@ -194,8 +202,8 @@ If you find this project useful, consider supporting its development with a dona
 </div>
 
 - 📦 Repo: [TgMusicBot on GitHub](https://github.com/AshokShau/TgMusicBot)
-- 💬 Support: [Telegram Group](https://t.me/FallenProjects)
-- 🐍 Old version: [TgMusicBot (Python)](https://github.com/FallenProjects/music-bot)
+- 💬 Support: [Telegram Group](https://t.me/arcchatz)
+- 📢 Updates: [Telegram Channel](https://t.me/ArcUpdates)
 
 ---
 
