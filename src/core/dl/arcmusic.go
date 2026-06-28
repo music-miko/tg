@@ -22,7 +22,6 @@ import (
 	"time"
 
 	"ashokshau/tgmusic/config"
-	"ashokshau/tgmusic/src/utils"
 )
 
 // arcMusic is a dedicated client for the ArcMusic API, used exclusively for
@@ -121,9 +120,8 @@ func (a *arcMusic) createJob(videoID string, isVideo bool) (string, error) {
 	return "", lastErr
 }
 
-// pollJob polls the job-status endpoint until the job completes, then returns the public URL.
-// The public URL may point directly at a Telegram channel message (direct DB cache hit)
-// or at a CDN-hosted file.
+// pollJob polls the job-status endpoint until the job completes, then returns
+// the CDN public URL of the downloaded file.
 func (a *arcMusic) pollJob(jobID string) (string, error) {
 	endpoint := fmt.Sprintf("%s/youtube/jobStatus", a.ApiUrl)
 	params := url.Values{"job_id": {jobID}}
@@ -176,15 +174,15 @@ func (a *arcMusic) pollJob(jobID string) (string, error) {
 	return "", lastErr
 }
 
-// resolve runs the full create -> poll cycle and returns a usable path/URL for the track.
-//
-// If the resolved public URL points directly at a Telegram channel message
-// (a "direct DB" cache hit), the t.me link itself is returned unchanged - the
-// caller (downloadViaWrapper in downloader.go) detects this via
-// utils.TelegramMessageRegex and fetches the file straight from the Telegram
-// channel using the download-bot client, skipping a redundant HTTP transfer.
-// Otherwise, the file is downloaded from the CDN URL onto local disk.
+// resolve first checks the shared ArcMusic media cache for a Telegram-channel
+// cache hit ("direct DB downloading" - see media_db.go), and only calls the
+// ArcMusic job API (create -> poll -> save) if that lookup misses. This
+// mirrors tosu4's _optimized_download: media-DB cache first, then API-1.
 func (a *arcMusic) resolve(videoID string, isVideo bool) (string, error) {
+	if link, ok := lookupDirectDb(videoID, isVideo); ok {
+		return link, nil
+	}
+
 	if !a.isConfigured() {
 		return "", errors.New("ArcMusic API is not configured")
 	}
@@ -203,12 +201,6 @@ func (a *arcMusic) resolve(videoID string, isVideo bool) (string, error) {
 			lastErr = fmt.Errorf("poll job: %w", err)
 			slog.Warn("ArcMusic jobStatus failed", "video_id", videoID, "job_id", jobID, "cycle", cycle+1, "error", err)
 			continue
-		}
-
-		// Direct DB downloading: the ArcMusic API serves this file straight from
-		// its Telegram channel cache, so hand the link back unchanged.
-		if utils.TelegramMessageRegex.MatchString(publicURL) {
-			return publicURL, nil
 		}
 
 		ext := ".m4a"

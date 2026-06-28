@@ -105,6 +105,14 @@
       "description": "ArcMusic API key, used for YouTube downloads.",
       "required": false
     },
+    "DB_URI": {
+      "description": "MongoDB URI for the ArcMusic shared media cache (direct DB downloading). Leave empty to disable.",
+      "required": false
+    },
+    "MEDIA_CHANNEL_ID": {
+      "description": "Telegram channel ID used by the ArcMusic media cache for direct DB downloading. Leave empty to disable.",
+      "required": false
+    },
     "DEFAULT_SERVICE": {
       "description": "Default music download service (e.g., youtube).",
       "required": false,

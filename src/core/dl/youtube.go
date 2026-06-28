@@ -153,16 +153,15 @@ func (y *youTubeData) getTrack() (utils.TrackInfo, error) {
 }
 
 // downloadTrack handles the download of a track from YouTube.
-// It prefers the ArcMusic API (with direct DB / Telegram channel-cache support),
-// falling back to yt-dlp if the API is unavailable or fails.
+// It checks the shared ArcMusic media cache first (direct DB / Telegram
+// channel-cache downloading), then the ArcMusic API, falling back to yt-dlp
+// if neither is available or both fail.
 func (y *youTubeData) downloadTrack(info utils.TrackInfo, video bool) (string, error) {
-	if config.ArcApiUrl != "" {
-		filePath, err := newArcMusic().resolve(info.Id, video)
-		if err == nil {
-			return filePath, nil
-		}
-		slog.Warn("ArcMusic download failed, falling back to yt-dlp", "video_id", info.Id, "error", err)
+	filePath, err := newArcMusic().resolve(info.Id, video)
+	if err == nil {
+		return filePath, nil
 	}
+	slog.Warn("ArcMusic download failed, falling back to yt-dlp", "video_id", info.Id, "error", err)
 
 	return y.downloadWithYtDlp(info.Id, video)
 }
