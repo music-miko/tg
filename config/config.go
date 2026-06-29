@@ -26,45 +26,26 @@ var (
 	SessionStrings      = getSessionStrings("STRING", 10)
 	SessionType         = getEnv("SESSION_TYPE", "pyrogram")
 	MongoUri            = os.Getenv("MONGO_URI")
-	DbName              = getEnv("DB_NAME", "Anon")
+	DbName              = getEnv("DB_NAME", "dead")
 	ApiUrl              = getEnv("API_URL", "https://api.onegrab.fun")
 	ApiKey              = os.Getenv("API_KEY")
-	// ARC_API_URL / ARC_API_KEY — used exclusively for YouTube downloads via the Arc API.
-	// If ARC_API_URL is not set, falls back to API_URL so existing setups keep working.
-	ArcApiUrl = func() string {
-		if v := os.Getenv("ARC_API_URL"); v != "" {
-			return v
-		}
-		return ApiUrl
-	}()
-	ArcApiKey = func() string {
-		if v := os.Getenv("ARC_API_KEY"); v != "" {
-			return v
-		}
-		return ApiKey
-	}()
+	ArcApiUrl           = getEnv("ARC_API_URL", "https://api.arcmusic.fun")
+	ArcApiKey           = os.Getenv("ARC_API_KEY")
 	OwnerId             = getEnvInt64("OWNER_ID", 0)
 	LoggerId            = getEnvInt64("LOGGER_ID", 0)
 	Proxy               = os.Getenv("PROXY")
 	DefaultService      = strings.ToLower(getEnv("DEFAULT_SERVICE", "youtube"))
 	MaxFileSize         = getEnvInt64("MAX_FILE_SIZE", 500*1024*1024)
-	SongDurationLimit   = getEnvInt64("SONG_DURATION_LIMIT", 3600)
+	SongDurationLimit   = getEnvInt64("SONG_DURATION_LIMIT", 14400)
 	DownloadsDir        = getEnv("DOWNLOADS_DIR", "database")
 	SupportGroup        = getEnv("SUPPORT_GROUP", "https://t.me/arcchatz")
 	SupportChannel      = getEnv("SUPPORT_CHANNEL", "https://t.me/ArcUpdates")
-	StartImg            = getEnv("START_IMG", "https://i.pinimg.com/736x/0d/f4/65/0df465d1e98239ecb6283400605fc813.jpg")
+	StartImg            = getEnv("START_IMG", "https://graph.org/file/53da2da07394e68711e96-76893b7d22247cde3b.jpg")
 	Port                = getEnv("PORT", "6060")
-	AutoLeave           = getEnvBool("AUTO_LEAVE", false)
+	AutoLeave           = getEnvBool("AUTO_LEAVE", true)
 	EnableVideoPlayback = getEnvBool("ENABLE_VPLAY", true)
 	MediaChannelID      = getEnvInt64("MEDIA_CHANNEL_ID", 0)
-	// DB_URI is a separate MongoDB URI used exclusively for the media channel cache.
-	// Falls back to MONGO_URI if not set, matching _api.py CACHE_DB behaviour.
-	DbURI = func() string {
-		if v := os.Getenv("DB_URI"); v != "" {
-			return v
-		}
-		return MongoUri
-	}()
+	DbURI               = os.Getenv("DB_URI")
 
 	DEVS        []int64
 	CookiesPath []string
