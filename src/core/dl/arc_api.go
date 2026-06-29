@@ -131,24 +131,6 @@ func (c *arcCache) fetchID(videoID string, video bool) (int64, error) {
 	return doc.MessageID, nil
 }
 
-// saveID upserts the message_id for a given videoID into the cache collection.
-func (c *arcCache) saveID(videoID string, video bool, msgID int64) error {
-	fname := videoID + ".mp3"
-	if video {
-		fname = videoID + ".mp4"
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	_, err := c.col.UpdateOne(ctx,
-		bson.M{"track_id": fname, "is_video": video},
-		bson.M{"$set": bson.M{"track_id": fname, "is_video": video, "message_id": msgID}},
-		options.UpdateOne().SetUpsert(true),
-	)
-	return err
-}
-
 // getTrack fetches the cached track from the Telegram media channel and returns
 // the local file path (mirrors _api.py get_track).
 func (c *arcCache) getTrack(videoID string, video bool) (string, error) {
@@ -161,8 +143,11 @@ func (c *arcCache) getTrack(videoID string, video bool) (string, error) {
 		return "", err // cache miss
 	}
 
-	// Use DlBot if available, otherwise the primary bot
+	// Prefer DlBot; fall back to MainBot if DlBot is not configured.
 	bot := DlBot
+	if bot == nil {
+		bot = MainBot
+	}
 	if bot == nil {
 		return "", errors.New("arc cache: no bot client available to download from channel")
 	}
@@ -388,19 +373,6 @@ func (a *arcAPIClient) DownloadYouTube(videoID string, video bool) (string, erro
 	}
 
 	return "", fmt.Errorf("arc api: all download attempts failed for videoID %s", videoID)
-}
-
-// SaveToDBCache saves a newly uploaded media message ID back to the cache DB.
-// Call this after uploading a downloaded file to MEDIA_CHANNEL_ID.
-func (a *arcAPIClient) SaveToDBCache(videoID string, video bool, msgID int64) {
-	if a.cache == nil {
-		return
-	}
-	if err := a.cache.saveID(videoID, video, msgID); err != nil {
-		slog.Warn("ArcApi: failed to save to DB cache", "videoID", videoID, "error", err)
-	} else {
-		slog.Info("ArcApi: saved to DB cache", "videoID", videoID, "msgID", msgID)
-	}
 }
 
 // ArcAPI is the package-level singleton Arc API client.
